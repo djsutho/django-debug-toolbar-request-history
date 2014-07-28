@@ -1,0 +1,86 @@
+{% load i18n %}
+<div id="RequestHistoryPanelContent">
+
+<script type="text/javascript">
+    function djdtClearPanels() {
+        djdt.jQuery('.djDebugPanelContent .djdt-scroll').html('');
+        djdt.jQuery('.djDebugPanelContent .scroll').html('');
+    }
+
+    function djdtLoadToolbar(id) {
+        djdt.jQuery('#djDebug').data('store-id', id);
+        djdt.jQuery('.djdt-panelContent').hide();
+        djdt.jQuery('.panelContent').hide();
+
+        for (i = 0; i < djdtSidebarContent[id].length; i++) {
+            var panel = djdtSidebarContent[id][i];
+            djdt.jQuery('.' + panel['panel_id']).html(panel['nav_title'] +
+                '<br /><small>' + panel['nav_subtitle'] + '</small>');
+        }
+        djdtClearPanels();
+    }
+
+    function djdtEmptyHistoryPanel() {
+        djdt.jQuery('.RequestHistoryPanel').off( "click", djdtEmptyHistoryPanel);
+        djdt.jQuery('#RequestHistoryPanelContent').parent().html('');
+    }
+    var djdtSidebarContent = {
+        {% for id, toolbar in toolbars.items %}
+            "{{ id }}": [
+                {% for dummy, panel in toolbar.content.items %}
+                    {
+                        "panel_id": "{{ panel.panel_id }}",
+                        "nav_title": "{{ panel.nav_title|escapejs }}",
+                        "nav_subtitle": "{{ panel.nav_subtitle|escapejs }}"
+                    },
+                {% endfor %}
+		    ],
+		{% endfor %}
+    }
+
+    function djdtTogglePost(button) {
+        if (djdt.jQuery(button).siblings().css('white-space') == 'pre') {
+            djdt.jQuery(button).html('+');
+            djdt.jQuery(button).siblings().css({'white-space': 'nowrap'});
+        } else {
+            djdt.jQuery(button).html('-');
+            djdt.jQuery(button).siblings().css({'white-space': 'pre'});
+        }
+    }
+
+    djdt.jQuery( document ).ready(function() {
+        djdt.jQuery('.RequestHistoryPanel').on( "click", djdtEmptyHistoryPanel);
+    });
+</script>
+
+
+<h4>{% trans "Request headers" %}</h4>
+
+<table>
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>{% trans "Time" %}</th>
+			<th>{% trans "Path" %}</th>
+			<th>{% trans "Post Variables" %}</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for id, toolbar in toolbars.items reversed %}
+			<tr class="{% cycle 'djDebugOdd' 'djDebugEven' %}">
+                <td onclick="djdtLoadToolbar('{{ id }}');" style="cursor: pointer;">{{forloop.counter}}</td>
+				<td onclick="djdtLoadToolbar('{{ id }}');" style="cursor: pointer;">
+                    {{ toolbar.toolbar.stats.RequestHistoryPanel.time|escape }}
+                </td>
+                <td onclick="djdtLoadToolbar('{{ id }}');" style="cursor: pointer;">
+                    <p>{{ toolbar.toolbar.stats.RequestHistoryPanel.request_url|escape }}</p>
+                </td>
+                <td style="white-space: nowrap;">
+                    <a class="djToggleSwitch" onclick="djdtTogglePost(this);" href="#">+</a>
+                    <span style="white-space: nowrap;">{{ toolbar.toolbar.stats.RequestHistoryPanel.post|truncatechars:200 |escape }}</span>
+                </td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+</div>

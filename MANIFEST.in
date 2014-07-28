@@ -1,0 +1,2 @@
+include AUTHORS CHANGES README INSTALL LICENCE
+recursive-include ddt_request_history *.py *.html *.js
