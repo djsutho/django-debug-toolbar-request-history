@@ -34,8 +34,8 @@
                         "nav_subtitle": "{{ panel.nav_subtitle|escapejs }}"
                     },
                 {% endfor %}
-		    ],
-		{% endfor %}
+            ],
+        {% endfor %}
     }
 
     function djdtTogglePost(button) {
@@ -57,19 +57,19 @@
 <h4>{% trans "Request headers" %}</h4>
 
 <table>
-	<thead>
-		<tr>
-			<th>#</th>
-			<th>{% trans "Time" %}</th>
-			<th>{% trans "Path" %}</th>
-			<th>{% trans "Post Variables" %}</th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for id, toolbar in toolbars.items reversed %}
-			<tr class="{% cycle 'djDebugOdd' 'djDebugEven' %}">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>{% trans "Time" %}</th>
+            <th>{% trans "Path" %}</th>
+            <th>{% trans "Post Variables" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for id, toolbar in toolbars.items %}
+            <tr class="{% cycle 'djDebugOdd' 'djDebugEven' %}">
                 <td onclick="djdtLoadToolbar('{{ id }}');" style="cursor: pointer;">{{forloop.counter}}</td>
-				<td onclick="djdtLoadToolbar('{{ id }}');" style="cursor: pointer;">
+            <td onclick="djdtLoadToolbar('{{ id }}');" style="cursor: pointer;">
                     {{ toolbar.toolbar.stats.RequestHistoryPanel.time|escape }}
                 </td>
                 <td onclick="djdtLoadToolbar('{{ id }}');" style="cursor: pointer;">
@@ -79,8 +79,8 @@
                     <a class="djToggleSwitch" onclick="djdtTogglePost(this);" href="#">+</a>
                     <span style="white-space: nowrap;">{{ toolbar.toolbar.stats.RequestHistoryPanel.post|truncatechars:200|escape }}</span>
                 </td>
-			</tr>
-		{% endfor %}
-	</tbody>
+            </tr>
+        {% endfor %}
+    </tbody>
 </table>
 </div>

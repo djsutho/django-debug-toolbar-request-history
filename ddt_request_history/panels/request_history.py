@@ -1,7 +1,11 @@
 from __future__ import absolute_import, unicode_literals
-from datetime import datetime
 import json
 import uuid
+import logging
+import sys
+
+from datetime import datetime
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.template import loader
@@ -15,16 +19,22 @@ import os
 from django.template.context import Context
 
 try:
-    from collections import OrderedDict
+    from collections import OrderedDict, Callable
 except ImportError:
     from django.utils.datastructures import SortedDict as OrderedDict
 
+logger = logging.getLogger(__name__)
+
+DEBUG_TOOLBAR_URL_PREFIX = getattr(settings, 'DEBUG_TOOLBAR_URL_PREFIX', '/__debug__')
 
 def allow_ajax(request):
     """
     Default function to determine whether to show the toolbar on a given page.
     """
     if request.META.get('REMOTE_ADDR', None) not in settings.INTERNAL_IPS:
+        return False
+    if request.get_full_path().startswith(DEBUG_TOOLBAR_URL_PREFIX) and \
+            request.GET.get('panel_id', None) != 'RequestHistoryPanel':
         return False
     return bool(settings.DEBUG)
 
@@ -93,9 +103,10 @@ class RequestHistoryPanel(Panel):
                 try:
                     panel_id = panel.panel_id
                     nav_title = panel.nav_title
-                    nav_subtitle = panel.nav_subtitle
+                    nav_subtitle = panel.nav_subtitle() if isinstance(
+                        panel.nav_subtitle, Callable) else panel.nav_subtitle
                 except Exception:
-                    pass
+                    logger.debug('Error parsing panel info:', exc_info=True)
                 if panel_id is not None:
                     content.update({
                         panel_id: {
@@ -114,9 +125,8 @@ class RequestHistoryPanel(Panel):
             'request_history.html'
         )
         t = loader.get_template_from_string(open(template_path).read())
-        return t.render(Context({'toolbars': toolbars}))
+        return t.render(Context({'toolbars': OrderedDict(reversed(list(toolbars.items())))}))
 
     def disable_instrumentation(self):
-        if not self.toolbar.stats[self.panel_id]['request_url'].startswith(
-                getattr(settings, 'DEBUG_TOOLBAR_URL_PREFIX', '/__debug__')):
+        if not self.toolbar.stats[self.panel_id]['request_url'].startswith(DEBUG_TOOLBAR_URL_PREFIX):
             self.toolbar.store()
