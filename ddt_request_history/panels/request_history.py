@@ -8,7 +8,6 @@ from datetime import datetime
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.template import loader
 from django.utils.translation import ugettext_lazy as _
 
 import debug_toolbar
@@ -17,6 +16,7 @@ from debug_toolbar.toolbar import DebugToolbar
 from debug_toolbar.panels import Panel
 import os
 from django.template.context import Context
+from django.template import Template
 
 try:
     from collections import OrderedDict, Callable
@@ -124,7 +124,7 @@ class RequestHistoryPanel(Panel):
             os.path.dirname(os.path.realpath(__file__)),
             'request_history.html'
         )
-        t = loader.get_template_from_string(open(template_path).read())
+        t = Template(open(template_path).read())
         return t.render(Context({'toolbars': OrderedDict(reversed(list(toolbars.items())))}))
 
     def disable_instrumentation(self):
