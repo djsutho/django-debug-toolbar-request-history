@@ -125,7 +125,10 @@ class RequestHistoryPanel(Panel):
             'request_history.html'
         )
         t = Template(open(template_path).read())
-        return t.render(Context({'toolbars': OrderedDict(reversed(list(toolbars.items())))}))
+        return t.render(Context({
+            'toolbars': OrderedDict(reversed(list(toolbars.items()))),
+            'trunc_length': dt_settings.CONFIG.get('RH_POST_TRUNC_LENGTH', 0)
+        }))
 
     def disable_instrumentation(self):
         if not self.toolbar.stats[self.panel_id]['request_url'].startswith(DEBUG_TOOLBAR_URL_PREFIX):
