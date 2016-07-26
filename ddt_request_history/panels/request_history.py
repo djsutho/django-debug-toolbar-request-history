@@ -28,9 +28,9 @@ DEBUG_TOOLBAR_URL_PREFIX = getattr(settings, 'DEBUG_TOOLBAR_URL_PREFIX', '/__deb
 
 try:
     from debug_toolbar.settings import get_config
-    Config = get_config()
-except AttributeError:
-    from debug_toolbar.settings import Config
+    CONFIG = get_config()
+except ImportError:
+    from debug_toolbar.settings import CONFIG
 
 
 def allow_ajax(request):
@@ -51,7 +51,7 @@ def patched_store(self):
     self.store_id = uuid.uuid4().hex
     cls = type(self)
     cls._store[self.store_id] = self
-    store_size = Config.get('RESULTS_CACHE_SIZE', Config.get('RESULTS_STORE_SIZE', 10))
+    store_size = CONFIG.get('RESULTS_CACHE_SIZE', CONFIG.get('RESULTS_STORE_SIZE', 10))
     for dummy in range(len(cls._store) - store_size):
         try:
             # collections.OrderedDict
@@ -132,7 +132,7 @@ class RequestHistoryPanel(Panel):
         t = Template(open(template_path).read())
         return t.render(Context({
             'toolbars': OrderedDict(reversed(list(toolbars.items()))),
-            'trunc_length': Config.get('RH_POST_TRUNC_LENGTH', 0)
+            'trunc_length': CONFIG.get('RH_POST_TRUNC_LENGTH', 0)
         }))
 
     def disable_instrumentation(self):
