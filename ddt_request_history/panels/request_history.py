@@ -1,22 +1,20 @@
 from __future__ import absolute_import, unicode_literals
-import json
-import uuid
-import logging
-import sys
 
 from datetime import datetime
+import json
+import logging
+import os
+import uuid
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.template import Template
+from django.template.context import Context
 from django.utils.translation import ugettext_lazy as _
 
 import debug_toolbar
-from debug_toolbar import settings as dt_settings
 from debug_toolbar.toolbar import DebugToolbar
 from debug_toolbar.panels import Panel
-import os
-from django.template.context import Context
-from django.template import Template
 
 try:
     from collections import OrderedDict, Callable
@@ -26,6 +24,14 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 DEBUG_TOOLBAR_URL_PREFIX = getattr(settings, 'DEBUG_TOOLBAR_URL_PREFIX', '/__debug__')
+
+
+try:
+    from debug_toolbar.settings import get_config
+    CONFIG = get_config()
+except ImportError:
+    from debug_toolbar.settings import CONFIG
+
 
 def allow_ajax(request):
     """
@@ -45,8 +51,7 @@ def patched_store(self):
     self.store_id = uuid.uuid4().hex
     cls = type(self)
     cls._store[self.store_id] = self
-    store_size = dt_settings.CONFIG.get(
-        'RESULTS_CACHE_SIZE', dt_settings.CONFIG.get('RESULTS_STORE_SIZE', 10))
+    store_size = CONFIG.get('RESULTS_CACHE_SIZE', CONFIG.get('RESULTS_STORE_SIZE', 10))
     for dummy in range(len(cls._store) - store_size):
         try:
             # collections.OrderedDict
@@ -127,7 +132,7 @@ class RequestHistoryPanel(Panel):
         t = Template(open(template_path).read())
         return t.render(Context({
             'toolbars': OrderedDict(reversed(list(toolbars.items()))),
-            'trunc_length': dt_settings.CONFIG.get('RH_POST_TRUNC_LENGTH', 0)
+            'trunc_length': CONFIG.get('RH_POST_TRUNC_LENGTH', 0)
         }))
 
     def disable_instrumentation(self):
