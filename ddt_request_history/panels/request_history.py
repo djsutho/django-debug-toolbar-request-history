@@ -95,6 +95,12 @@ class RequestHistoryPanel(Panel):
             'time': datetime.now(),
         })
 
+        # XXX: generate_stats will be called twice on requests where the toolbar is added to the page
+        #   e.g. non-ajax requests. This should only cause the stats to be overwritten with the same data.
+        for panel in reversed(self.toolbar.enabled_panels):
+            if getattr(panel, 'generate_stats', False):
+                panel.generate_stats(request, response)
+
     @property
     def content(self):
         """ Content of the panel when it's displayed in full screen. """
