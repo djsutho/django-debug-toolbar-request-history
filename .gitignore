@@ -1,2 +1,4 @@
 *.pyc
 .idea/
+dist/
+django_debug_toolbar_request_history.egg-info/

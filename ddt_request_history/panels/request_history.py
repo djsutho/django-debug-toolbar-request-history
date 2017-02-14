@@ -98,8 +98,14 @@ class RequestHistoryPanel(Panel):
         # XXX: generate_stats will be called twice on requests where the toolbar is added to the page
         #   e.g. non-ajax requests. This should only cause the stats to be overwritten with the same data.
         for panel in reversed(self.toolbar.enabled_panels):
-            if getattr(panel, 'generate_stats', False):
+            if hasattr(panel, 'generate_stats'):
                 panel.generate_stats(request, response)
+
+                # XXX: ignore future calls to generate_stats for SQLPanel. Could probably do this for all
+                #   panels but will limit it for now in case something happens in later on in the toolbar
+                #   middleware.
+                if panel.panel_id == 'SQLPanel':
+                    panel.generate_stats = lambda a, b: None
 
     @property
     def content(self):
