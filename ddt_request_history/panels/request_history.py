@@ -4,6 +4,7 @@ from datetime import datetime
 import json
 import logging
 import os
+import threading
 import uuid
 
 from django.conf import settings
@@ -15,11 +16,17 @@ from django.utils.translation import ugettext_lazy as _
 import debug_toolbar
 from debug_toolbar.toolbar import DebugToolbar
 from debug_toolbar.panels import Panel
+from debug_toolbar.middleware import DebugToolbarMiddleware
 
 try:
     from collections import OrderedDict, Callable
 except ImportError:
     from django.utils.datastructures import SortedDict as OrderedDict
+
+try:
+    toolbar_version = float(debug_toolbar.VERSION)
+except:
+    toolbar_version = 0
 
 logger = logging.getLogger(__name__)
 
@@ -33,14 +40,37 @@ except ImportError:
     from debug_toolbar.settings import CONFIG
 
 
+def patched_process_request(self, request):
+    # Decide whether the toolbar is active for this request.
+    show_toolbar = debug_toolbar.middleware.get_show_toolbar()
+    if not show_toolbar(request):
+        return
+
+    toolbar = DebugToolbar(request)
+    self.__class__.debug_toolbars[threading.current_thread().ident] = toolbar
+
+    # Activate instrumentation ie. monkey-patch.
+    for panel in toolbar.enabled_panels:
+        panel.enable_instrumentation()
+
+    # Run process_request methods of panels like Django middleware.
+    response = None
+    for panel in toolbar.enabled_panels:
+        response = panel.process_request(request)
+        if response:
+            break
+    return response
+
+
 def allow_ajax(request):
     """
     Default function to determine whether to show the toolbar on a given page.
     """
     if request.META.get('REMOTE_ADDR', None) not in settings.INTERNAL_IPS:
         return False
-    if request.get_full_path().startswith(DEBUG_TOOLBAR_URL_PREFIX) and \
-            request.GET.get('panel_id', None) != 'RequestHistoryPanel':
+    if toolbar_version < 1.8 \
+            and request.get_full_path().startswith(DEBUG_TOOLBAR_URL_PREFIX) \
+            and request.GET.get('panel_id', None) != 'RequestHistoryPanel':
         return False
     return bool(settings.DEBUG)
 
@@ -67,6 +97,9 @@ def patched_fetch(cls, store_id):
 
 DebugToolbar.store = patched_store
 DebugToolbar.fetch = classmethod(patched_fetch)
+
+if toolbar_version >= 1.8:
+    DebugToolbarMiddleware.process_request = patched_process_request
 
 
 class RequestHistoryPanel(Panel):

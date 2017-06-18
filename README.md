@@ -50,10 +50,11 @@ DEBUG_TOOLBAR_PANELS = [
 ]
 ```
 
-To record ajax requests add ```SHOW_TOOLBAR_CALLBACK``` to ```DEBUG_TOOLBAR_CONFIG``` e.g.:
+For vesions of the debug toolbar less than 1.8 you can record ajax requests by adding ```SHOW_TOOLBAR_CALLBACK``` to ```DEBUG_TOOLBAR_CONFIG``` e.g.:
 
 ```python
 DEBUG_TOOLBAR_CONFIG = {
+    # only requred for debug_toolbar versions below 1.8
     'SHOW_TOOLBAR_CALLBACK': 'ddt_request_history.panels.request_history.allow_ajax',
 }
 ```
