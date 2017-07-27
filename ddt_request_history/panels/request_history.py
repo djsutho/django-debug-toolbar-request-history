@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import threading
+import sys
 import uuid
 
 from django.conf import settings
@@ -16,7 +17,6 @@ from django.utils.translation import ugettext_lazy as _
 import debug_toolbar
 from debug_toolbar.toolbar import DebugToolbar
 from debug_toolbar.panels import Panel
-from debug_toolbar.middleware import DebugToolbarMiddleware
 
 try:
     from collections import OrderedDict, Callable
@@ -62,6 +62,38 @@ def patched_process_request(self, request):
     return response
 
 
+def patch_middleware_process_request():
+    if not this_module.middleware_patched:
+        if toolbar_version >= 1.8:
+            try:
+                from debug_toolbar.middleware import DebugToolbarMiddleware
+                DebugToolbarMiddleware.process_request = patched_process_request
+            except ImportError:
+                return
+        this_module.middleware_patched = True
+
+
+middleware_patched = False
+template = None
+this_module = sys.modules[__name__]
+
+# XXX: need to call this as early as possible but we have circular imports when
+# running with gunicorn so also try a second later
+patch_middleware_process_request()
+threading.Timer(1.0, patch_middleware_process_request, ()).start()
+
+
+def get_template():
+    if this_module.template is None:
+        template_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'request_history.html'
+        )
+        with open(template_path) as template_file:
+            this_module.template = Template(template_file.read())
+    return this_module.template
+
+
 def allow_ajax(request):
     """
     Default function to determine whether to show the toolbar on a given page.
@@ -97,9 +129,6 @@ def patched_fetch(cls, store_id):
 
 DebugToolbar.store = patched_store
 DebugToolbar.fetch = classmethod(patched_fetch)
-
-if toolbar_version >= 1.8:
-    DebugToolbarMiddleware.process_request = patched_process_request
 
 
 class RequestHistoryPanel(Panel):
@@ -169,13 +198,7 @@ class RequestHistoryPanel(Panel):
                 'toolbar': toolbar,
                 'content': content
             }
-
-        template_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'request_history.html'
-        )
-        t = Template(open(template_path).read())
-        return t.render(Context({
+        return get_template().render(Context({
             'toolbars': OrderedDict(reversed(list(toolbars.items()))),
             'trunc_length': CONFIG.get('RH_POST_TRUNC_LENGTH', 0)
         }))
