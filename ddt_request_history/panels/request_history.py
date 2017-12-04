@@ -1,6 +1,5 @@
 from __future__ import absolute_import, unicode_literals
 
-from datetime import datetime
 import json
 import logging
 import os
@@ -8,13 +7,17 @@ import threading
 import sys
 import uuid
 
+import debug_toolbar
+
+from datetime import datetime
+from distutils.version import LooseVersion
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.template import Template
 from django.template.context import Context
 from django.utils.translation import ugettext_lazy as _
 
-import debug_toolbar
 from debug_toolbar.toolbar import DebugToolbar
 from debug_toolbar.panels import Panel
 
@@ -24,9 +27,9 @@ except ImportError:
     from django.utils.datastructures import SortedDict as OrderedDict
 
 try:
-    toolbar_version = float(debug_toolbar.VERSION)
+    toolbar_version = LooseVersion(debug_toolbar.VERSION)
 except:
-    toolbar_version = 0
+    toolbar_version = LooseVersion('0')
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +67,7 @@ def patched_process_request(self, request):
 
 def patch_middleware_process_request():
     if not this_module.middleware_patched:
-        if toolbar_version >= 1.8:
+        if toolbar_version >= LooseVersion('1.8'):
             try:
                 from debug_toolbar.middleware import DebugToolbarMiddleware
                 DebugToolbarMiddleware.process_request = patched_process_request
@@ -100,7 +103,7 @@ def allow_ajax(request):
     """
     if request.META.get('REMOTE_ADDR', None) not in settings.INTERNAL_IPS:
         return False
-    if toolbar_version < 1.8 \
+    if toolbar_version < LooseVersion('1.8') \
             and request.get_full_path().startswith(DEBUG_TOOLBAR_URL_PREFIX) \
             and request.GET.get('panel_id', None) != 'RequestHistoryPanel':
         return False
