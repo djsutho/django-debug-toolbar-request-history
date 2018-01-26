@@ -160,6 +160,9 @@ class RequestHistoryPanel(Panel):
             'time': datetime.now(),
         })
 
+        for panel in reversed(self.toolbar.enabled_panels):
+            panel.disable_instrumentation()
+
         # XXX: generate_stats will be called twice on requests where the toolbar is added to the page
         #   e.g. non-ajax requests. This should only cause the stats to be overwritten with the same data.
         for panel in reversed(self.toolbar.enabled_panels):
