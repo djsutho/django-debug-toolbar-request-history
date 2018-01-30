@@ -2,7 +2,6 @@ from __future__ import absolute_import, unicode_literals
 
 import json
 import logging
-import os
 import threading
 import sys
 import uuid
@@ -14,8 +13,8 @@ from distutils.version import LooseVersion
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.template import Template
-from django.template.context import Context
+from django.template import TemplateDoesNotExist
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
 from debug_toolbar.toolbar import DebugToolbar
@@ -84,17 +83,6 @@ this_module = sys.modules[__name__]
 # running with gunicorn so also try a second later
 patch_middleware_process_request()
 threading.Timer(1.0, patch_middleware_process_request, ()).start()
-
-
-def get_template():
-    if this_module.template is None:
-        template_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'request_history.html'
-        )
-        with open(template_path) as template_file:
-            this_module.template = Template(template_file.read())
-    return this_module.template
 
 
 def allow_ajax(request):
@@ -201,10 +189,15 @@ class RequestHistoryPanel(Panel):
                 'toolbar': toolbar,
                 'content': content
             }
-        return get_template().render(Context({
-            'toolbars': OrderedDict(reversed(list(toolbars.items()))),
-            'trunc_length': CONFIG.get('RH_POST_TRUNC_LENGTH', 0)
-        }))
+        try:
+            response = render_to_string('debug_toolbar/panels/request_history.html',
+                                        context={
+                                            'toolbars': OrderedDict(reversed(list(toolbars.items()))),
+                                            'trunc_length': CONFIG.get('RH_POST_TRUNC_LENGTH', 0)})
+        except TemplateDoesNotExist:
+            return 'You should add "ddt_request_history" to your INSTALLED_APPS.'
+        else:
+            return response
 
     def disable_instrumentation(self):
         if not self.toolbar.stats[self.panel_id]['request_url'].startswith(DEBUG_TOOLBAR_URL_PREFIX):

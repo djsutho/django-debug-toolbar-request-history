@@ -1,3 +1,4 @@
+
 Request History Panel for Django Debug Toolbar
 ==============================================
 
@@ -6,18 +7,17 @@ Adds a request history panel to [Django Debug Toolbar](https://github.com/django
 
 ### Install ###
 
-```bash
-pip install django-debug-toolbar-request-history
-```
+1. Install panel with pip
+	```bash
+	pip install django-debug-toolbar-request-history
+	```
+	or for development version:
 
-or for development version:
-
-
-```bash
-pip install git+https://github.com/djsutho/django-debug-toolbar-request-history.git
-```
-
-Add the panel to ```DEBUG_TOOLBAR_PANELS``` (see the config section for more details).
+	```bash
+	pip install git+https://github.com/djsutho/django-debug-toolbar-request-history.git
+	```
+2. Add the panel to ```DEBUG_TOOLBAR_PANELS``` (see the config section for more details).
+3. Add the ``ddt_request_history`` app to your ``INSTALLED_APPS``.
 
 
 ### Usage ###
