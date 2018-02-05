@@ -96,7 +96,7 @@ def get_template():
         with open(template_path) as template_file:
             this_module.template = Template(
                 template_file.read(),
-                DjangoTemplates({'NAME': 'rh', 'DIRS': [], 'APP_DIRS': False, 'OPTIONS': {}}).engine
+                engine=DjangoTemplates({'NAME': 'rh', 'DIRS': [], 'APP_DIRS': False, 'OPTIONS': {}}).engine
         )
     return this_module.template
 
