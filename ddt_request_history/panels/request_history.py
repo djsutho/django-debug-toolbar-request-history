@@ -15,6 +15,7 @@ from distutils.version import LooseVersion
 from django.conf import settings
 from django.http import HttpResponse
 from django.template import Template
+from django.template.backends.django import DjangoTemplates
 from django.template.context import Context
 from django.utils.translation import ugettext_lazy as _
 
@@ -93,7 +94,10 @@ def get_template():
             'request_history.html'
         )
         with open(template_path) as template_file:
-            this_module.template = Template(template_file.read())
+            this_module.template = Template(
+                template_file.read(),
+                engine=DjangoTemplates({'NAME': 'rh', 'DIRS': [], 'APP_DIRS': False, 'OPTIONS': {}}).engine
+        )
     return this_module.template
 
 

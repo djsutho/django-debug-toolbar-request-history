@@ -1,4 +1,5 @@
 *.pyc
 .idea/
+build/
 dist/
 django_debug_toolbar_request_history.egg-info/
