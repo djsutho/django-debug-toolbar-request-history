@@ -15,6 +15,7 @@ from distutils.version import LooseVersion
 from django.conf import settings
 from django.http import HttpResponse
 from django.template import Template
+from django.template.backends.django import DjangoTemplates
 from django.template.context import Context
 from django.utils.translation import ugettext_lazy as _
 
@@ -93,7 +94,10 @@ def get_template():
             'request_history.html'
         )
         with open(template_path) as template_file:
-            this_module.template = Template(template_file.read())
+            this_module.template = Template(
+                template_file.read(),
+                engine=DjangoTemplates({'NAME': 'rh', 'DIRS': [], 'APP_DIRS': False, 'OPTIONS': {}}).engine
+        )
     return this_module.template
 
 
@@ -159,6 +163,9 @@ class RequestHistoryPanel(Panel):
             'post': json.dumps((request.POST), sort_keys=True, indent=4),
             'time': datetime.now(),
         })
+
+        for panel in reversed(self.toolbar.enabled_panels):
+            panel.disable_instrumentation()
 
         # XXX: generate_stats will be called twice on requests where the toolbar is added to the page
         #   e.g. non-ajax requests. This should only cause the stats to be overwritten with the same data.
