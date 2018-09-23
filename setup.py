@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-debug-toolbar-request-history',
-    version='0.0.7',
+    version='0.0.9',
     description='Request History Panel for Django Debug Toolbar',
     author='David Sutherland',
     author_email='djsutho@gmail.com',
@@ -11,7 +11,7 @@ setup(
     include_package_data=True,
     install_requires=['django-debug-toolbar'],
     url='https://github.com/djsutho/django-debug-toolbar-request-history',
-    download_url='https://github.com/djsutho/django-debug-toolbar-request-history/tarball/0.0.7',
+    download_url='https://github.com/djsutho/django-debug-toolbar-request-history/tarball/0.0.9',
     keywords=['django', 'debug', 'ajax'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -27,6 +27,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
 )
