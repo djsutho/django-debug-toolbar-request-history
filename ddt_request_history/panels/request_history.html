@@ -7,6 +7,7 @@
                 <tr>
                     <th>#</th>
                     <th>{% trans "Time" %}</th>
+                    <th>{% trans "Method" %}</th>
                     <th>{% trans "Path" %}</th>
                     <th>{% trans "Post Variables" %}</th>
                 </tr>
@@ -17,6 +18,9 @@
                         <td onclick="djdt.rh.loadToolbar('{{ id }}');" style="cursor: pointer;">{{forloop.counter}}</td>
                     <td onclick="djdt.rh.loadToolbar('{{ id }}');" style="cursor: pointer;">
                             {{ toolbar.toolbar.stats.RequestHistoryPanel.time|escape }}
+                        </td>
+                        <td onclick="djdt.rh.loadToolbar('{{ id }}');" style="cursor: pointer;">
+                            <p>{{ toolbar.toolbar.stats.RequestHistoryPanel.request_method|escape }}</p>
                         </td>
                         <td onclick="djdt.rh.loadToolbar('{{ id }}');" style="cursor: pointer;">
                             <p>{{ toolbar.toolbar.stats.RequestHistoryPanel.request_url|escape }}</p>
