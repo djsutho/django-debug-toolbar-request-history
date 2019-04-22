@@ -55,6 +55,10 @@
 
         function loadToolbar(id) {
             document.querySelector('#djDebug').setAttribute('data-store-id', id);
+            if (typeof djdt != "undefined" && djdt.jQuery) {  // using django-debug-toolbar < 1.10?
+                // invalidate jquery data cache
+                djdt.jQuery('#djDebug').removeData('store-id');
+            }
             document.querySelector('.djdt-panelContent').style.display = 'none';
             var panCon = document.querySelector('.panelContent');
             if (panCon) panCon.style.display = 'none';
