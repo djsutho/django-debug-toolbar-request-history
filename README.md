@@ -22,9 +22,15 @@ Add the panel to ```DEBUG_TOOLBAR_PANELS``` (see the config section for more det
 
 ### Usage ###
 
-Click on the "Request History" panel in the toolbar to load the available requests. Click on the request you are interested in (on the "Time" or "Path" part of the request) to load the toolbar for that request.
+* Click on the "Request History" panel in the toolbar to load the available requests 
+* Click on the request you are interested in (on the "Time" or "Path" part of the request) to load the toolbar for that request
 
-**Note:** currently requests do not survive server reload, therefore, when using the dev server old requests will not be available after a code change is loaded.
+
+**Notes**
+
+Due to django-debug-toolbar reliance on thread-local:
+- currently requests do not survive server reload, therefore, when using the dev server old requests will not be available after a code change is loaded
+- if you get inconsistent request history each time you click on the panel, lower your server threads to 1
 
 
 ### Config (in settings.py) ###

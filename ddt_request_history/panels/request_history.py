@@ -161,7 +161,7 @@ class RequestHistoryPanel(Panel):
         self.record_stats({
             'request_url': request.get_full_path(),
             'request_method': request.method,
-            'post': json.dumps((request.POST), sort_keys=True, indent=4),
+            'post': json.dumps(request.POST, sort_keys=True, indent=4),
             'time': datetime.now(),
         })
 
