@@ -43,35 +43,43 @@ try:
 except ImportError:
     from debug_toolbar.settings import CONFIG
 
+_original_middleware_call = None
 
-def patched_process_request(self, request):
-    # Decide whether the toolbar is active for this request.
+def patched_middleware_call(self, request):
+    if not request.is_ajax():
+        return _original_middleware_call(self, request)
+
     show_toolbar = debug_toolbar.middleware.get_show_toolbar()
     if not show_toolbar(request):
-        return
+        return self.get_response(request)
 
-    toolbar = DebugToolbar(request)
-    self.__class__.debug_toolbars[threading.current_thread().ident] = toolbar
+    toolbar = DebugToolbar(request, self.get_response)
 
     # Activate instrumentation ie. monkey-patch.
     for panel in toolbar.enabled_panels:
         panel.enable_instrumentation()
+    try:
+        # Run panels like Django middleware.
+        response = toolbar.process_request(request)
+    finally:
+        # Deactivate instrumentation ie. monkey-unpatch. This must run
+        # regardless of the response. Keep 'return' clauses below.
+        for panel in reversed(toolbar.enabled_panels):
+            panel.disable_instrumentation()
 
-    # Run process_request methods of panels like Django middleware.
-    response = None
-    for panel in toolbar.enabled_panels:
-        response = panel.process_request(request)
-        if response:
-            break
+    for panel in reversed(toolbar.enabled_panels):
+        panel.generate_stats(request, response)
+        panel.generate_server_timing(request, response)
     return response
 
 
-def patch_middleware_process_request():
+def patch_middleware():
     if not this_module.middleware_patched:
         if toolbar_version >= LooseVersion('1.8'):
             try:
                 from debug_toolbar.middleware import DebugToolbarMiddleware
-                DebugToolbarMiddleware.process_request = patched_process_request
+                this_module._original_middleware_call = DebugToolbarMiddleware.__call__
+                DebugToolbarMiddleware.__call__ = patched_middleware_call
             except ImportError:
                 return
         this_module.middleware_patched = True
@@ -83,8 +91,8 @@ this_module = sys.modules[__name__]
 
 # XXX: need to call this as early as possible but we have circular imports when
 # running with gunicorn so also try a second later
-patch_middleware_process_request()
-threading.Timer(1.0, patch_middleware_process_request, ()).start()
+patch_middleware()
+threading.Timer(1.0, patch_middleware, ()).start()
 
 
 def get_template():
@@ -106,10 +114,6 @@ def allow_ajax(request):
     Default function to determine whether to show the toolbar on a given page.
     """
     if request.META.get('REMOTE_ADDR', None) not in settings.INTERNAL_IPS:
-        return False
-    if toolbar_version < LooseVersion('1.8') \
-            and request.get_full_path().startswith(DEBUG_TOOLBAR_URL_PREFIX) \
-            and request.GET.get('panel_id', None) != 'RequestHistoryPanel':
         return False
     return bool(settings.DEBUG)
 
@@ -156,6 +160,23 @@ class RequestHistoryPanel(Panel):
                 return HttpResponse(self.content)
         except AttributeError:
             pass
+
+    def generate_stats(self, request, response):
+        self.record_stats({
+            'request_url': request.get_full_path(),
+            'request_method': request.method,
+            'post': json.dumps(request.POST, sort_keys=True, indent=4),
+            'time': datetime.now(),
+        })
+
+    def process_request(self, request):
+        self.record_stats({
+            'request_url': request.get_full_path(),
+            'request_method': request.method,
+            'post': json.dumps(request.POST, sort_keys=True, indent=4),
+            'time': datetime.now(),
+        })
+        return super().process_request(request)
 
     def process_response(self, request, response):
         self.record_stats({
@@ -215,5 +236,6 @@ class RequestHistoryPanel(Panel):
         }))
 
     def disable_instrumentation(self):
-        if not self.toolbar.stats[self.panel_id]['request_url'].startswith(DEBUG_TOOLBAR_URL_PREFIX):
+        request_panel = self.toolbar.stats.get(self.panel_id)
+        if request_panel and not request_panel.get('request_url', '').startswith(DEBUG_TOOLBAR_URL_PREFIX):
             self.toolbar.store()
