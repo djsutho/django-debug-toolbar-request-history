@@ -14,7 +14,7 @@ or for development version:
 
 
 ```bash
-pip install git+https://github.com/djsutho/django-debug-toolbar-request-history.git
+pip install -e git+https://github.com/djsutho/django-debug-toolbar-request-history.git#egg=django-debug-toolbar-request-history
 ```
 
 Add the panel to ```DEBUG_TOOLBAR_PANELS``` (see the config section for more details).
