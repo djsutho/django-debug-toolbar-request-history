@@ -10,7 +10,7 @@ import uuid
 
 import debug_toolbar
 
-from collections import OrderedDict, Callable
+from collections import OrderedDict
 from datetime import datetime
 from distutils.version import LooseVersion
 
@@ -23,6 +23,11 @@ from django.utils.translation import ugettext_lazy as _
 from debug_toolbar.panels import Panel
 from debug_toolbar.settings import get_config
 from debug_toolbar.toolbar import DebugToolbar
+
+try:
+    from collections.abc import Callable
+except ImportError:  # Python < 3.3
+    from collections import Callable
 
 try:
     toolbar_version = LooseVersion(debug_toolbar.VERSION)
