@@ -7,6 +7,7 @@ setup(
     author='David Sutherland',
     author_email='djsutho@gmail.com',
     license='BSD',
+    license_files=['LICENSE'],
     packages=find_packages(exclude=('tests', 'example')),
     include_package_data=True,
     install_requires=['django-debug-toolbar>=2.0'],
