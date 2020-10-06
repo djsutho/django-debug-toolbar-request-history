@@ -1,5 +1,8 @@
-Request History Panel for Django Debug Toolbar
-==============================================
+# Update: History is now built into Django Debug Toolbar #
+
+Since version [3.0](https://django-debug-toolbar.readthedocs.io/en/latest/changes.html#) of Django Debug Toolbar a built in history panel is available. More details can be found in this [PR](https://github.com/jazzband/django-debug-toolbar/pull/1250) and the [docs](https://django-debug-toolbar.readthedocs.io/en/latest/panels.html#history). As this functionality is being provided by the toolbar itself there will likely not be any further updates to this project (though if there are good reasons for an exception like supporting older versions of the toolbar it will be considered). Thanks to all those who've contributed to and used this project.
+
+## Request History Panel for Django Debug Toolbar ##
 
 Adds a request history panel to [Django Debug Toolbar](https://github.com/django-debug-toolbar/django-debug-toolbar) for viewing stats for different requests (with the option for ajax support).
 
