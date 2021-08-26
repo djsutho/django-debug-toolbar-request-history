@@ -18,7 +18,7 @@ from django.conf import settings
 from django.template import Template
 from django.template.backends.django import DjangoTemplates
 from django.template.context import Context
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from debug_toolbar.panels import Panel
 from debug_toolbar.settings import get_config
