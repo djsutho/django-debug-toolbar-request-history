@@ -10,6 +10,7 @@ setup(
     license_files=['LICENSE'],
     packages=find_packages(exclude=('tests', 'example')),
     include_package_data=True,
+    python_requires='>=3.4',
     install_requires=['django-debug-toolbar>=2.0'],
     url='https://github.com/djsutho/django-debug-toolbar-request-history',
     download_url='https://github.com/djsutho/django-debug-toolbar-request-history/tarball/0.1.4',
