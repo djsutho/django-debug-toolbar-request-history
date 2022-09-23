@@ -64,9 +64,11 @@ def patched_middleware_call(self, request):
         panel.generate_stats(request, response)
         panel.generate_server_timing(request, response)
 
-    response = self.generate_server_timing_header(
+    headers = self.get_headers(
         response, toolbar.enabled_panels
     )
+    for k, v in headers.items():
+        response[k] = v
 
     # Check for responses where the toolbar can't be inserted.
     content_encoding = response.get("Content-Encoding", "")
